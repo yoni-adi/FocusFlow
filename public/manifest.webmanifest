@@ -1,0 +1,28 @@
+{
+  "name": "FocusFlow — ポモドーロ × ノイズ",
+  "short_name": "FocusFlow",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0affff",
+  "description": "集中・休憩を自動で回すポモドーロタイマー。ホワイト/ピンク/ブラウンノイズ内蔵。PWA対応でホーム画面からすぐ起動。",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

@@ -350,7 +350,8 @@ export default function App() {
 
         <footer className="text-center text-xs text-slate-500 mt-8 mb-6">
           <p>© {new Date().getFullYear()} FocusFlow. 無料ツール / PWA。広告とアフィリエイトで運営。</p>
-        </footer>
+          | <a href="https://focus-flow-omega-wheat.vercel.app/terms.html?v=1" target="_blank" rel="noopener noreferrer">利用規約</a>
+</footer>
       </main>
     </div>
   );

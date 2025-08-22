@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>FocusFlow（ポモドーロ × ノイズ）| 無料PWAタイマー</title>
+
+  <!-- Canonical & basic SEO -->
+  <link rel="canonical" href="https://focus-flow-omega-wheat.vercel.app/" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <meta name="description" content="FocusFlow は、集中・休憩を自動で回すポモドーロタイマー。ホワイト/ピンク/ブラウンノイズ内蔵、iPhoneでも音が出る設計。無料PWAでホーム画面からサクッと起動。" />
+
+  <!-- Language / locale -->
+  <link rel="alternate" href="https://focus-flow-omega-wheat.vercel.app/" hreflang="ja" />
+
+  <!-- PWA / icons -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#0affff" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="FocusFlow" />
+  <meta property="og:url" content="https://focus-flow-omega-wheat.vercel.app/" />
+  <meta property="og:title" content="FocusFlow（ポモドーロ × ノイズ）| 無料PWAタイマー" />
+  <meta property="og:description" content="集中・休憩を自動で回すポモドーロタイマー。ホワイト/ピンク/ブラウンノイズ内蔵。PWA対応でホーム画面からすぐ起動。" />
+  <meta property="og:image" content="https://focus-flow-omega-wheat.vercel.app/icon-512.png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta property="og:image:alt" content="FocusFlow アプリアイコン" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="FocusFlow（ポモドーロ × ノイズ）| 無料PWAタイマー" />
+  <meta name="twitter:description" content="集中・休憩を自動で回すポモドーロタイマー。ノイズ内蔵・PWA対応。" />
+  <meta name="twitter:image" content="https://focus-flow-omega-wheat.vercel.app/icon-512.png" />
+
+  <!-- Performance hints (optional) -->
+  <!-- <link rel="preload" href="/assets/index.css" as="style"> -->
+  <!-- <link rel="preload" href="/src/main.jsx" as="script" type="module"> -->
+
+  <!-- Structured Data: Website + SearchAction -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "url": "https://focus-flow-omega-wheat.vercel.app/",
+    "name": "FocusFlow",
+    "description": "集中・休憩を自動で回すポモドーロタイマー。ホワイト/ピンク/ブラウンノイズ内蔵。PWA対応でホーム画面からすぐ起動。",
+    "inLanguage": "ja",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://focus-flow-omega-wheat.vercel.app/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <!-- Structured Data: SoftwareApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "FocusFlow",
+    "applicationCategory": "ProductivityApplication",
+    "operatingSystem": "iOS, Android, Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "JPY"
+    },
+    "description": "ポモドーロ・タイマー + ホワイト/ピンク/ブラウンノイズ。無料PWAで起動が速い。"
+  }
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+  <!-- Vite entry -->
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

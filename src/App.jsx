@@ -11,16 +11,14 @@ const DEFAULTS = {
   roundsUntilLong: 4,
   volume: 0.2,
   noise: "white",
+  chime: true,     // 区切りベル
+  notify: false,   // 通知
+  vibrate: false,  // バイブ
 };
 
 const LS_KEY = "focusflow_settings_v1";
 
-/**
- * iOS対応版ノイズ生成フック
- * - ready が true（ユーザー操作でAudioContextが解放済み）の時だけノードを作成
- * - type: "white" | "pink" | "brown" | "off"
- * - volume: 0〜1
- */
+// iOS対応版ノイズ生成フック
 function useNoise(audioCtxRef, type, volume, ready) {
   const nodeRef = useRef(null);
   const gainRef = useRef(null);
@@ -28,7 +26,6 @@ function useNoise(audioCtxRef, type, volume, ready) {
   useEffect(() => {
     if (!audioCtxRef.current || !ready) return;
     const ctx = audioCtxRef.current;
-
     const bufferSize = 2 * ctx.sampleRate;
     const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
@@ -90,6 +87,7 @@ function useNoise(audioCtxRef, type, volume, ready) {
   }, [volume]);
 }
 
+// 進捗リング
 function ProgressRing({ size = 220, stroke = 12, progress = 0 }) {
   const normalizedRadius = size / 2 - stroke;
   const circumference = normalizedRadius * 2 * Math.PI;
@@ -149,7 +147,15 @@ export default function App() {
 
   const audioCtxRef = useRef(null);
   const [audioReady, setAudioReady] = useState(false);
+  const chimeRef = useRef(null); // 区切りベル音
 
+  // 区切りベル音の音量追従
+  useEffect(() => {
+    if (!chimeRef.current) return;
+    chimeRef.current.volume = clamp((muted ? 0 : settings.volume), 0, 1);
+  }, [settings.volume, muted]);
+
+  // iOS/Safari でのオーディオ解放
   const initAudio = async () => {
     if (audioCtxRef.current) return;
     const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -165,9 +171,48 @@ export default function App() {
       src.connect(ctx.destination);
       src.start(0);
     } catch {}
+    // 🔔 区切りベルの準備
+    if (!chimeRef.current) {
+      chimeRef.current = new Audio("/bell.mp3");
+      chimeRef.current.preload = "auto";
+      chimeRef.current.volume = clamp((muted ? 0 : settings.volume), 0, 1);
+    }
     setAudioReady(true);
   };
 
+  // フェーズ切替通知
+  function notifyPhase(nextMode) {
+    // 🔔 ベル
+    if (settings.chime && chimeRef.current) {
+      try {
+        chimeRef.current.currentTime = 0;
+        chimeRef.current.play().catch(() => {});
+      } catch {}
+    }
+    // 📳 バイブ
+    if (settings.vibrate && "vibrate" in navigator) {
+      navigator.vibrate([80, 40, 80]);
+    }
+    // 🔔 Web通知
+    if (settings.notify && "Notification" in window) {
+      if (Notification.permission === "granted") {
+        new Notification("FocusFlow", {
+          body: nextMode === "work" ? "作業を再開しましょう" : (nextMode === "break" ? "小休憩に入りましょう" : "長めの休憩に入りましょう"),
+          icon: "/icon-192.png",
+        });
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission();
+      }
+    }
+    // 🪩 タイトルを一時的に変更
+    const old = document.title;
+    const msg = nextMode === "work" ? "▶ 作業再開！" : (nextMode === "break" ? "⏸ 小休憩！" : "⏸ 長めの休憩！");
+    document.title = `【${msg}】FocusFlow`;
+    setTimeout(() => (document.title = old), 4000);
+  }
+  // ---- ここまでが Part1 ----
+
+  // ノイズ駆動（オフやミュート時は音量0）
   useNoise(
     audioCtxRef,
     settings.noise,
@@ -175,6 +220,7 @@ export default function App() {
     audioReady
   );
 
+  // タイマー進行 & フェーズ切替時の通知
   useEffect(() => {
     if (!running) return;
     const id = setInterval(() => {
@@ -183,15 +229,12 @@ export default function App() {
           if (mode === "work") {
             const nextRound = (round % settings.roundsUntilLong) + 1;
             setRound((r) => (r % settings.roundsUntilLong) + 1);
-            if (nextRound === 1) {
-              setMode("long");
-              return settings.longBreakMin * 60;
-            } else {
-              setMode("break");
-              return settings.breakMin * 60;
-            }
+            const nextMode = (nextRound === 1) ? "long" : "break";
+            notifyPhase(nextMode);
+            return (nextMode === "long" ? settings.longBreakMin : settings.breakMin) * 60;
           } else {
-            setMode("work");
+            const nextMode = "work";
+            notifyPhase(nextMode);
             return settings.workMin * 60;
           }
         }
@@ -201,6 +244,7 @@ export default function App() {
     return () => clearInterval(id);
   }, [running, mode, settings, round]);
 
+  // モード/設定変更時に残り秒リセット
   useEffect(() => {
     const m =
       mode === "work" ? settings.workMin :
@@ -209,6 +253,7 @@ export default function App() {
     setSecondsLeft(m * 60);
   }, [mode, settings.workMin, settings.breakMin, settings.longBreakMin]);
 
+  // 設定の永続化
   useEffect(() => {
     localStorage.setItem(LS_KEY, JSON.stringify(settings));
   }, [settings]);
@@ -217,7 +262,7 @@ export default function App() {
   const ss = secondsLeft % 60;
 
   const startStop = () => {
-    if (!audioReady) initAudio();
+    if (!audioReady) initAudio(); // 初回は必ずユーザー操作内で解放
     setRunning((v) => !v);
   };
 
@@ -230,6 +275,15 @@ export default function App() {
     setSecondsLeft(m * 60);
   };
 
+  // 通知の許可リクエスト
+  const requestNotifyPermission = async () => {
+    if (!("Notification" in window)) return alert("このブラウザは通知に対応していません。");
+    try {
+      const p = await Notification.requestPermission();
+      if (p !== "granted") alert("通知が許可されていません。ブラウザの設定から有効にしてください。");
+    } catch {}
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
       <header className="sticky top-0 z-10 bg-white/70 backdrop-blur border-b border-slate-200">
@@ -239,7 +293,9 @@ export default function App() {
             <h1 className="font-bold text-lg">FocusFlow</h1>
           </div>
           <div className="flex items-center gap-3">
-            <a href="#shop" className="inline-flex items-center gap-1 text-sm text-blue-600"><ShoppingBag className="h-4 w-4"/>おすすめアイテム</a>
+            <a href="#shop" className="inline-flex items-center gap-1 text-sm text-blue-600">
+              <ShoppingBag className="h-4 w-4"/>おすすめアイテム
+            </a>
             <button
               onClick={() => alert("PWAのインストールはブラウザの共有/インストールから行えます。")}
               className="text-sm text-slate-600"
@@ -256,6 +312,7 @@ export default function App() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
+          {/* 左：タイマー */}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="text-center mb-4">
               <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-sm font-medium">
@@ -275,14 +332,14 @@ export default function App() {
                 </button>
               </div>
             </div>
-                        <div className="mt-6 grid grid-cols-3 gap-3">
+            <div className="mt-6 grid grid-cols-3 gap-3">
               <button onClick={() => { setMode("work"); setRunning(false); }} className={`rounded-xl px-3 py-2 border text-sm ${mode === "work" ? "border-blue-500 text-blue-600 bg-blue-50" : "border-slate-200"}`}>集中 {settings.workMin}分</button>
               <button onClick={() => { setMode("break"); setRunning(false); }} className={`rounded-xl px-3 py-2 border text-sm ${mode === "break" ? "border-blue-500 text-blue-600 bg-blue-50" : "border-slate-200"}`}>休憩 {settings.breakMin}分</button>
               <button onClick={() => { setMode("long"); setRunning(false); }} className={`rounded-xl px-3 py-2 border text-sm ${mode === "long" ? "border-blue-500 text-blue-600 bg-blue-50" : "border-slate-200"}`}>長休憩 {settings.longBreakMin}分</button>
             </div>
           </div>
 
-          {/* 設定パネル */}
+          {/* 右：設定 */}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold flex items-center gap-2"><Settings className="h-5 w-5"/> 設定</h2>
@@ -299,7 +356,7 @@ export default function App() {
                 </div>
               )}
 
-              {/* 入力欄: 集中・休憩時間など */}
+              {/* 時間設定 */}
               <div>
                 <label className="block text-sm text-slate-600 mb-1">集中時間（分）</label>
                 <input
@@ -327,7 +384,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* ノイズ選択 */}
+              {/* ノイズ */}
               <div>
                 <label className="block text-sm text-slate-600 mb-1 flex items-center gap-2"><Music2 className="h-4 w-4"/> ノイズ</label>
                 <div className="grid grid-cols-4 gap-2">
@@ -343,7 +400,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* 音量調整 */}
+              {/* 音量 & ミュート */}
               <div>
                 <label className="block text-sm text-slate-600 mb-1 flex items-center gap-2"><Volume2 className="h-4 w-4"/> 音量</label>
                 <input
@@ -356,7 +413,7 @@ export default function App() {
                 </button>
               </div>
 
-              {/* ラウンド数 */}
+              {/* 長休憩までのラウンド数 */}
               <div>
                 <label className="block text-sm text-slate-600 mb-1">長休憩までのラウンド数</label>
                 <input
@@ -365,15 +422,53 @@ export default function App() {
                   className="w-full rounded-xl border border-slate-300 px-3 py-2"
                 />
               </div>
+
+              {/* 区切りベル/通知/バイブ */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={!!settings.chime}
+                    onChange={(e)=> setSettings(s => ({...s, chime: e.target.checked}))}
+                  />
+                  区切りベル
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={!!settings.vibrate}
+                    onChange={(e)=> setSettings(s => ({...s, vibrate: e.target.checked}))}
+                  />
+                  バイブ
+                </label>
+                <div className="flex items-center gap-2 text-sm">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={!!settings.notify}
+                      onChange={(e)=> setSettings(s => ({...s, notify: e.target.checked}))}
+                    />
+                    通知
+                  </label>
+                  <button
+                    type="button"
+                    onClick={requestNotifyPermission}
+                    className="ml-auto rounded-md px-2 py-1 border text-xs text-slate-600"
+                  >
+                    許可をリクエスト
+                  </button>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
 
-        {/* ショップセクション */}
         <div className="mt-6 mb-10 rounded-2xl border border-dashed border-slate-300 p-4 text-center text-slate-500">
           広告枠（レスポンシブ広告）
         </div>
 
+        {/* おすすめ（アフィリエイト欄） */}
         <section id="shop" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="font-semibold mb-4 flex items-center gap-2"><ShoppingBag className="h-5 w-5"/> 集中を高めるおすすめ</h2>
           <ul className="grid sm:grid-cols-2 gap-4">
@@ -396,14 +491,14 @@ export default function App() {
           <p className="text-xs text-slate-500 mt-3">※ 上記リンクはアフィリエイトリンクに差し替え可能です。</p>
         </section>
 
-        {/* フッター */}
+        {/* フッター（規約/プライバシー/お問い合わせリンク） */}
         <footer className="text-center text-xs text-slate-500 mt-8 mb-6 space-y-2">
+          <nav className="flex items-center justify-center gap-4 text-slate-600">
+            <a className="hover:text-blue-600 underline-offset-4 hover:underline" href="/terms.html?v=1">利用規約</a>
+            <a className="hover:text-blue-600 underline-offset-4 hover:underline" href="/privacy.html?v=1">プライバシーポリシー</a>
+            <a className="hover:text-blue-600 underline-offset-4 hover:underline" href="/contact.html?v=1">お問い合わせ</a>
+          </nav>
           <p>© {new Date().getFullYear()} FocusFlow. 無料ツール / PWA。広告とアフィリエイトで運営。</p>
-          <div className="flex justify-center gap-4">
-            <a href="/terms.html" className="text-blue-600 hover:underline">利用規約</a>
-            <a href="/privacy.html" className="text-blue-600 hover:underline">プライバシーポリシー</a>
-            <a href="/contact.html" className="text-blue-600 hover:underline">お問い合わせ</a>
-          </div>
         </footer>
       </main>
     </div>

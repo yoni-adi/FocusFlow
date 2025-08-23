@@ -16,6 +16,7 @@ const DEFAULTS = {
 
 const LS_KEY = "focusflow_settings_v1";
 
+// ====== ノイズ生成フック ======
 function useNoise(audioCtxRef, type, volume, ready) {
   const nodeRef = useRef(null);
   const gainRef = useRef(null);
@@ -62,6 +63,7 @@ function useNoise(audioCtxRef, type, volume, ready) {
     gain.gain.value = clamp(volume, 0, 1);
     source.connect(gain).connect(ctx.destination);
     source.start();
+
     nodeRef.current = source;
     gainRef.current = gain;
 
@@ -69,34 +71,42 @@ function useNoise(audioCtxRef, type, volume, ready) {
       try { source.stop(); } catch {}
       try { source.disconnect(); } catch {}
       try { gain.disconnect(); } catch {}
+      nodeRef.current = null;
+      gainRef.current = null;
     };
   }, [audioCtxRef, ready, type]);
 
   useEffect(() => {
-    if (gainRef.current) gainRef.current.gain.value = clamp(volume, 0, 1);
+    if (gainRef.current) {
+      gainRef.current.gain.value = clamp(volume, 0, 1);
+    }
   }, [volume]);
 }
 
+// ====== 円形プログレスバー ======
 function ProgressRing({ size = 220, stroke = 12, progress = 0 }) {
   const normalizedRadius = size / 2 - stroke;
   const circumference = normalizedRadius * 2 * Math.PI;
   const offset = circumference - (progress / 100) * circumference;
   return (
     <svg height={size} width={size} className="mx-auto block">
-      <circle stroke="currentColor" fill="transparent" strokeWidth={stroke} className="text-gray-200" r={normalizedRadius} cx={size / 2} cy={size / 2} />
-      <circle stroke="currentColor" fill="transparent" strokeWidth={stroke} strokeLinecap="round" className="text-blue-500 transition-[stroke-dashoffset] duration-300 ease-linear" strokeDasharray={`${circumference} ${circumference}`} style={{ strokeDashoffset: offset }} r={normalizedRadius} cx={size / 2} cy={size / 2} />
+      <circle stroke="currentColor" fill="transparent" strokeWidth={stroke} className="text-gray-200" r={normalizedRadius} cx={size/2} cy={size/2} />
+      <circle stroke="currentColor" fill="transparent" strokeWidth={stroke} strokeLinecap="round"
+        className="text-blue-500 transition-[stroke-dashoffset] duration-300 ease-linear"
+        strokeDasharray={`${circumference} ${circumference}`}
+        style={{ strokeDashoffset: offset }}
+        r={normalizedRadius} cx={size/2} cy={size/2} />
     </svg>
   );
 }
 
+// ====== メインアプリ ======
 export default function App() {
   const [settings, setSettings] = useState(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
       return raw ? JSON.parse(raw) : DEFAULTS;
-    } catch {
-      return DEFAULTS;
-    }
+    } catch { return DEFAULTS; }
   });
 
   const [mode, setMode] = useState("work");
@@ -106,12 +116,13 @@ export default function App() {
   const [muted, setMuted] = useState(false);
 
   const totalSeconds = useMemo(() => {
-    const m = mode === "work" ? settings.workMin : mode === "break" ? settings.breakMin : settings.longBreakMin;
+    const m = mode === "work" ? settings.workMin :
+              mode === "break" ? settings.breakMin :
+              settings.longBreakMin;
     return m * 60;
   }, [mode, settings]);
 
   const progress = clamp(((totalSeconds - secondsLeft) / totalSeconds) * 100, 0, 100);
-
   const audioCtxRef = useRef(null);
   const [audioReady, setAudioReady] = useState(false);
 
@@ -120,7 +131,14 @@ export default function App() {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     const ctx = new Ctx();
     audioCtxRef.current = ctx;
-    try { if (ctx.state === "suspended") await ctx.resume(); } catch {}
+    try {
+      if (ctx.state === "suspended") await ctx.resume();
+      const silent = ctx.createBuffer(1, 1, ctx.sampleRate);
+      const src = ctx.createBufferSource();
+      src.buffer = silent;
+      src.connect(ctx.destination);
+      src.start(0);
+    } catch {}
     setAudioReady(true);
   };
 
@@ -136,9 +154,7 @@ export default function App() {
             setRound((r) => (r % settings.roundsUntilLong) + 1);
             if (nextRound === 1) { setMode("long"); return settings.longBreakMin * 60; }
             else { setMode("break"); return settings.breakMin * 60; }
-          } else {
-            setMode("work"); return settings.workMin * 60;
-          }
+          } else { setMode("work"); return settings.workMin * 60; }
         }
         return s - 1;
       });
@@ -147,43 +163,58 @@ export default function App() {
   }, [running, mode, settings, round]);
 
   useEffect(() => {
-    const m = mode === "work" ? settings.workMin : mode === "break" ? settings.breakMin : settings.longBreakMin;
+    const m = mode === "work" ? settings.workMin :
+              mode === "break" ? settings.breakMin :
+              settings.longBreakMin;
     setSecondsLeft(m * 60);
   }, [mode, settings.workMin, settings.breakMin, settings.longBreakMin]);
 
-  useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify(settings));
-  }, [settings]);
+  useEffect(() => { localStorage.setItem(LS_KEY, JSON.stringify(settings)); }, [settings]);
 
   const mm = Math.floor(secondsLeft / 60);
   const ss = secondsLeft % 60;
 
-  const startStop = () => { if (!audioReady) initAudio(); setRunning((v) => !v); };
-  const reset = () => {
-    setRunning(false);
-    const m = mode === "work" ? settings.workMin : mode === "break" ? settings.breakMin : settings.longBreakMin;
-    setSecondsLeft(m * 60);
-  };
-
-  useEffect(() => {
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
-    document.title = 'FocusFlow | ポモドーロ × ノイズ | PWA タイマー';
-  }, []);
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
-      {/* 省略: ヘッダーやメインUI部分はそのまま */}
+      {/* ヘッダー */}
+      <header className="sticky top-0 z-10 bg-white/70 backdrop-blur border-b border-slate-200">
+        <div className="mx-auto max-w-3xl px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            <h1 className="font-bold text-lg">FocusFlow</h1>
+          </div>
+        </div>
+      </header>
 
+      {/* メイン */}
+      <main className="mx-auto max-w-3xl px-4 py-6">
+        {/* タイマー */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="text-center mb-4">
+            <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-sm font-medium">
+              {mode === "work" ? "集中" : mode === "break" ? "小休憩" : "長めの休憩"}・ラウンド {round}
+            </span>
+          </div>
+          <div className="flex flex-col items-center gap-4">
+            <ProgressRing progress={progress} />
+            <div className="text-6xl font-bold tabular-nums leading-none">{pad(mm)}:{pad(ss)}</div>
+            <div className="flex items-center gap-3 mt-2">
+              <button onClick={initAudio} className="px-3 py-2 rounded bg-amber-200 text-amber-800">音を有効にする</button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* フッター */}
       <footer className="text-center text-xs text-slate-500 mt-8 mb-6">
-        <p>© {new Date().getFullYear()} FocusFlow. 無料ツール / PWA。広告とアフィリエイトで運営。</p>
-        <p>
-          <a href="/terms.html" className="text-blue-600">利用規約</a>
-          {" ｜ "}
-          <a href="/privacy.html" className="text-blue-600">プライバシーポリシー</a>
-          {" ｜ "}
-          <a href="/contact.html" className="text-blue-600">お問い合わせ</a>
+        <p>© {new Date().getFullYear()} FocusFlow. 無料ツール / PWA。</p>
+        <p className="mt-2">
+          <a href="/terms.html" className="text-blue-600 hover:underline mx-2">利用規約</a> | 
+          <a href="/privacy.html" className="text-blue-600 hover:underline mx-2">プライバシーポリシー</a> | 
+          <a href="/contact.html" className="text-blue-600 hover:underline mx-2">お問い合わせ</a>
         </p>
       </footer>
     </div>
   );
 }
+

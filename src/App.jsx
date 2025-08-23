@@ -17,8 +17,6 @@ const LS_KEY = "focusflow_settings_v1";
 
 /**
  * iOS対応版ノイズ生成フック
- * - ready: ユーザー操作でAudioContextが解放済みのときだけノードを作成
- * - type: "white" | "pink" | "brown" | "off"
  */
 function useNoise(audioCtxRef, type, volume, ready) {
   const nodeRef = useRef(null);
@@ -27,7 +25,6 @@ function useNoise(audioCtxRef, type, volume, ready) {
   useEffect(() => {
     if (!audioCtxRef.current || !ready) return;
     const ctx = audioCtxRef.current;
-
     const bufferSize = 2 * ctx.sampleRate;
     const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
@@ -63,13 +60,10 @@ function useNoise(audioCtxRef, type, volume, ready) {
     const source = ctx.createBufferSource();
     source.buffer = noiseBuffer;
     source.loop = true;
-
     const gain = ctx.createGain();
     gain.gain.value = clamp(volume, 0, 1);
-
     source.connect(gain).connect(ctx.destination);
     source.start();
-
     nodeRef.current = source;
     gainRef.current = gain;
 
@@ -77,8 +71,6 @@ function useNoise(audioCtxRef, type, volume, ready) {
       try { source.stop(); } catch {}
       try { source.disconnect(); } catch {}
       try { gain.disconnect(); } catch {}
-      nodeRef.current = null;
-      gainRef.current = null;
     };
   }, [audioCtxRef, ready, type]);
 
@@ -93,12 +85,8 @@ function ProgressRing({ size = 220, stroke = 12, progress = 0 }) {
   const offset = circumference - (progress / 100) * circumference;
   return (
     <svg height={size} width={size} className="mx-auto block">
-      <circle stroke="currentColor" fill="transparent" strokeWidth={stroke} className="text-gray-200"
-        r={normalizedRadius} cx={size / 2} cy={size / 2} />
-      <circle stroke="currentColor" fill="transparent" strokeWidth={stroke} strokeLinecap="round"
-        className="text-blue-500 transition-[stroke-dashoffset] duration-300 ease-linear"
-        strokeDasharray={`${circumference} ${circumference}`} style={{ strokeDashoffset: offset }}
-        r={normalizedRadius} cx={size / 2} cy={size / 2} />
+      <circle stroke="currentColor" fill="transparent" strokeWidth={stroke} className="text-gray-200" r={normalizedRadius} cx={size / 2} cy={size / 2} />
+      <circle stroke="currentColor" fill="transparent" strokeWidth={stroke} strokeLinecap="round" className="text-blue-500 transition-[stroke-dashoffset] duration-300 ease-linear" strokeDasharray={`${circumference} ${circumference}`} style={{ strokeDashoffset: offset }} r={normalizedRadius} cx={size / 2} cy={size / 2} />
     </svg>
   );
 }
@@ -134,24 +122,11 @@ export default function App() {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     const ctx = new Ctx();
     audioCtxRef.current = ctx;
-    try {
-      if (ctx.state === "suspended") await ctx.resume();
-      const silent = ctx.createBuffer(1, 1, ctx.sampleRate);
-      const src = ctx.createBufferSource();
-      src.buffer = silent;
-      src.connect(ctx.destination);
-      src.start(0);
-    } catch {}
+    try { if (ctx.state === "suspended") await ctx.resume(); } catch {}
     setAudioReady(true);
   };
 
-  // ノイズ駆動（オフやミュート時は音量0）
-  useNoise(
-    audioCtxRef,
-    settings.noise,
-    (muted || settings.noise === "off") ? 0 : settings.volume,
-    audioReady
-  );
+  useNoise(audioCtxRef, settings.noise, (muted || settings.noise === "off") ? 0 : settings.volume, audioReady);
 
   useEffect(() => {
     if (!running) return;
@@ -161,16 +136,10 @@ export default function App() {
           if (mode === "work") {
             const nextRound = (round % settings.roundsUntilLong) + 1;
             setRound((r) => (r % settings.roundsUntilLong) + 1);
-            if (nextRound === 1) {
-              setMode("long");
-              return settings.longBreakMin * 60;
-            } else {
-              setMode("break");
-              return settings.breakMin * 60;
-            }
+            if (nextRound === 1) { setMode("long"); return settings.longBreakMin * 60; }
+            else { setMode("break"); return settings.breakMin * 60; }
           } else {
-            setMode("work");
-            return settings.workMin * 60;
+            setMode("work"); return settings.workMin * 60;
           }
         }
         return s - 1;
@@ -191,16 +160,17 @@ export default function App() {
   const mm = Math.floor(secondsLeft / 60);
   const ss = secondsLeft % 60;
 
-  const startStop = () => {
-    if (!audioReady) initAudio();
-    setRunning((v) => !v);
-  };
-
+  const startStop = () => { if (!audioReady) initAudio(); setRunning((v) => !v); };
   const reset = () => {
     setRunning(false);
     const m = mode === "work" ? settings.workMin : mode === "break" ? settings.breakMin : settings.longBreakMin;
     setSecondsLeft(m * 60);
   };
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+    document.title = 'FocusFlow | ポモドーロ × ノイズ | PWA タイマー';
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
@@ -212,9 +182,7 @@ export default function App() {
           </div>
           <div className="flex items-center gap-3">
             <a href="#shop" className="inline-flex items-center gap-1 text-sm text-blue-600"><ShoppingBag className="h-4 w-4"/>おすすめアイテム</a>
-            <button onClick={() => alert("PWAのインストールはブラウザの共有/インストールから行えます。")} className="text-sm text-slate-600">
-              インストール
-            </button>
+            <button onClick={() => alert("PWAのインストールはブラウザの共有/インストールから行えます。")} className="text-sm text-slate-600">インストール</button>
           </div>
         </div>
       </header>
@@ -261,31 +229,22 @@ export default function App() {
               {!audioReady && (
                 <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800 flex items-start justify-between gap-3">
                   <p>ブラウザの仕様により、音を再生するには一度ボタン操作が必要です。</p>
-                  <button onClick={initAudio} className="shrink-0 rounded-lg bg-amber-600 text-white px-3 py-1.5">
-                    音を有効にする
-                  </button>
+                  <button onClick={initAudio} className="shrink-0 rounded-lg bg-amber-600 text-white px-3 py-1.5">音を有効にする</button>
                 </div>
               )}
 
               <div>
                 <label className="block text-sm text-slate-600 mb-1">集中時間（分）</label>
-                <input type="number" min={1} max={120} value={settings.workMin}
-                  onChange={(e) => setSettings(s => ({...s, workMin: clamp(parseInt(e.target.value||"0", 10), 1, 120)}))}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2" />
+                <input type="number" min={1} max={120} value={settings.workMin} onChange={(e) => setSettings(s => ({...s, workMin: clamp(parseInt(e.target.value||"0", 10), 1, 120)}))} className="w-full rounded-xl border border-slate-300 px-3 py-2"/>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-slate-600 mb-1">短い休憩（分）</label>
-                  <input type="number" min={1} max={60} value={settings.breakMin}
-                    onChange={(e) => setSettings(s => ({...s, breakMin: clamp(parseInt(e.target.value||"0", 10), 1, 60)}))}
-                    className="w-full rounded-xl border border-slate-300 px-3 py-2" />
+                  <input type="number" min={1} max={60} value={settings.breakMin} onChange={(e) => setSettings(s => ({...s, breakMin: clamp(parseInt(e.target.value||"0", 10), 1, 60)}))} className="w-full rounded-xl border border-slate-300 px-3 py-2"/>
                 </div>
                 <div>
                   <label className="block text-sm text-slate-600 mb-1">長い休憩（分）</label>
-                  <input type="number" min={1} max={90} value={settings.longBreakMin}
-                    onChange={(e) => setSettings(s => ({...s, longBreakMin: clamp(parseInt(e.target.value||"0", 10), 1, 90)}))}
-                    className="w-full rounded-xl border border-slate-300 px-3 py-2" />
+                  <input type="number" min={1} max={90} value={settings.longBreakMin} onChange={(e) => setSettings(s => ({...s, longBreakMin: clamp(parseInt(e.target.value||"0", 10), 1, 90)}))} className="w-full rounded-xl border border-slate-300 px-3 py-2"/>
                 </div>
               </div>
 
@@ -293,9 +252,7 @@ export default function App() {
                 <label className="block text-sm text-slate-600 mb-1 flex items-center gap-2"><Music2 className="h-4 w-4"/> ノイズ</label>
                 <div className="grid grid-cols-4 gap-2">
                   {["off","white","pink","brown"].map(k => (
-                    <button key={k}
-                      onClick={() => { if (!audioReady) initAudio(); setSettings(s => ({...s, noise: k})); }}
-                      className={`rounded-xl px-3 py-2 border text-sm capitalize ${settings.noise===k?"border-blue-500 bg-blue-50 text-blue-600":"border-slate-200"}`}>
+                    <button key={k} onClick={() => { if (!audioReady) initAudio(); setSettings(s => ({...s, noise: k})); }} className={`rounded-xl px-3 py-2 border text-sm capitalize ${settings.noise===k?"border-blue-500 bg-blue-50 text-blue-600":"border-slate-200"}`}>
                       {k === "off" ? "オフ" : k}
                     </button>
                   ))}
@@ -304,9 +261,7 @@ export default function App() {
 
               <div>
                 <label className="block text-sm text-slate-600 mb-1 flex items-center gap-2"><Volume2 className="h-4 w-4"/> 音量</label>
-                <input type="range" min={0} max={100} value={Math.round(settings.volume*100)}
-                  onChange={(e)=> setSettings(s=>({...s, volume: clamp(parseInt(e.target.value,10)/100,0,1)}))}
-                  className="w-full"/>
+                <input type="range" min={0} max={100} value={Math.round(settings.volume*100)} onChange={(e)=> setSettings(s=>({...s, volume: clamp(parseInt(e.target.value,10)/100,0,1)}))} className="w-full"/>
                 <button onClick={()=> setMuted(v=>!v)} className="mt-1 inline-flex items-center gap-2 text-sm text-slate-600">
                   {muted ? <><VolumeX className="h-4 w-4"/>ミュート解除</> : <><Volume2 className="h-4 w-4"/>ミュート</>}
                 </button>
@@ -314,9 +269,7 @@ export default function App() {
 
               <div>
                 <label className="block text-sm text-slate-600 mb-1">長休憩までのラウンド数</label>
-                <input type="number" min={2} max={8} value={settings.roundsUntilLong}
-                  onChange={(e) => setSettings(s => ({...s, roundsUntilLong: clamp(parseInt(e.target.value||"0", 10), 2, 8)}))}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2" />
+                <input type="number" min={2} max={8} value={settings.roundsUntilLong} onChange={(e) => setSettings(s => ({...s, roundsUntilLong: clamp(parseInt(e.target.value||"0", 10), 2, 8)}))} className="w-full rounded-xl border border-slate-300 px-3 py-2"/>
               </div>
             </div>
           </div>
@@ -332,11 +285,11 @@ export default function App() {
             {[{
               title:"高遮音イヤープラグ",
               desc:"電車やカフェでも集中。装着感の良いタイプ。",
-              url:"#"
+              url:"#",
             },{
               title:"タイムブロッキング用ノート",
               desc:"ポモドーロの記録に。1日1ページで管理しやすい。",
-              url:"#"
+              url:"#",
             }].map((p, i) => (
               <li key={i} className="rounded-xl border border-slate-200 p-4">
                 <div className="font-medium">{p.title}</div>
@@ -350,8 +303,12 @@ export default function App() {
 
         <footer className="text-center text-xs text-slate-500 mt-8 mb-6">
           <p>© {new Date().getFullYear()} FocusFlow. 無料ツール / PWA。広告とアフィリエイトで運営。</p>
-          | <a href="https://focus-flow-omega-wheat.vercel.app/terms.html?v=1" target="_blank" rel="noopener noreferrer">利用規約</a>
-</footer>
+          <p>
+            <a href="/privacy.html" className="text-blue-600">プライバシーポリシー</a>
+            {" ｜ "}
+            <a href="/contact.html" className="text-blue-600">お問い合わせ</a>
+          </p>
+        </footer>
       </main>
     </div>
   );

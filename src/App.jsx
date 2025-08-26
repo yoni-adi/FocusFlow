@@ -491,6 +491,45 @@ export default function App() {
           <p className="text-xs text-slate-500 mt-3">※ 上記リンクはアフィリエイトリンクに差し替え可能です。</p>
         </section>
 
+         {/* --- 共有ボタン --- */}
+        <section className="my-8 text-center">
+          <h3 className="font-semibold mb-3">このタイマーをシェアする</h3>
+          <div className="flex flex-wrap justify-center gap-4">
+            {/* LINE */}
+            <a
+              href={`https://line.me/R/msg/text/?${encodeURIComponent("FocusFlowで集中！ https://focus-flow-omega-wheat.vercel.app/")}`}
+              target="_blank" rel="noopener noreferrer"
+              className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600"
+            >
+              LINEで送る
+            </a>
+            {/* X */}
+            <a
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("FocusFlowで集中！")}&url=${encodeURIComponent("https://focus-flow-omega-wheat.vercel.app/")}`}
+              target="_blank" rel="noopener noreferrer"
+              className="px-4 py-2 rounded-lg bg-black text-white hover:bg-gray-800"
+            >
+              Xで共有
+            </a>
+             {/* Facebook */}
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent("https://focus-flow-omega-wheat.vercel.app/")}`}
+              target="_blank" rel="noopener noreferrer"
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Facebookでシェア
+            </a>
+            {/* Instagram */}
+            <a
+              href="https://www.instagram.com/"
+              target="_blank" rel="noopener noreferrer"
+              className="px-4 py-2 rounded-lg bg-pink-500 text-white hover:bg-pink-600"
+            >
+              Instagramでシェア
+            </a>
+          </div>
+        </section>
+
         {/* フッター（規約/プライバシー/お問い合わせリンク） */}
         <footer className="text-center text-xs text-slate-500 mt-8 mb-6 space-y-2">
           <nav className="flex items-center justify-center gap-4 text-slate-600">

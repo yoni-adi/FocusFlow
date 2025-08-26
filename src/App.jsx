@@ -294,8 +294,9 @@ export default function App() {
           </div>
           <div className="flex items-center gap-3">
             <a href="#shop" className="inline-flex items-center gap-1 text-sm text-blue-600">
-              <ShoppingBag className="h-4 w-4"/>おすすめアイテム
+            <ShoppingBag className="h-4 w-4"/>おすすめアイテム
             </a>
+            <a href="#howto" className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900">使い方</a>
             <button
               onClick={() => alert("PWAのインストールはブラウザの共有/インストールから行えます。")}
               className="text-sm text-slate-600"
@@ -467,6 +468,68 @@ export default function App() {
         <div className="mt-6 mb-10 rounded-2xl border border-dashed border-slate-300 p-4 text-center text-slate-500">
           広告枠（レスポンシブ広告）
         </div>
+        {/* 使い方 & メリット */}
+<section id="howto" className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+  <h2 className="font-semibold mb-4 flex items-center gap-2">
+    <Clock className="h-5 w-5"/> 使い方 & メリット
+  </h2>
+
+  {/* 3ステップ（タイムライン風） */}
+  <ol className="relative border-slate-200 ml-3">
+    {[
+      {t:"1. 時間を設定", d:"集中時間・休憩時間・ラウンド数をお好みに調整。設定は自動保存されます。"},
+      {t:"2. スタートを押す", d:"画面を見続ける必要はありません。進捗リングで残り時間だけ把握。"},
+      {t:"3. 音と通知で切替", d:"終了時にベル音＆通知（許可時）。切替の見逃しを防ぎます。"},
+    ].map((s,i)=>(
+      <li key={i} className="pl-6 mb-4">
+        <div className="absolute -ml-3 mt-1 h-2 w-2 rounded-full bg-blue-500"></div>
+        <div className="font-medium">{s.t}</div>
+        <p className="text-sm text-slate-600">{s.d}</p>
+      </li>
+    ))}
+  </ol>
+
+  {/* メリット（カード） */}
+  <div className="grid sm:grid-cols-2 gap-4 mt-4">
+    <div className="rounded-xl border border-slate-200 p-4">
+      <div className="font-medium">集中しやすい音（ホワイト/ピンク/ブラウン）</div>
+      <p className="text-sm text-slate-600 mt-1">環境ノイズで雑念をカット。iPhoneでも動作するように最適化。</p>
+    </div>
+    <div className="rounded-xl border border-slate-200 p-4">
+      <div className="font-medium">通知 & ベル音で見逃しゼロ</div>
+      <p className="text-sm text-slate-600 mt-1">25分見張る必要なし。切替時だけ気づけるから画面は閉じてOK。</p>
+    </div>
+    <div className="rounded-xl border border-slate-200 p-4">
+      <div className="font-medium">PWAで1タップ起動</div>
+      <p className="text-sm text-slate-600 mt-1">ホーム画面に追加すればアプリ感覚でサクッと開始。</p>
+    </div>
+    <div className="rounded-xl border border-slate-200 p-4">
+      <div className="font-medium">自動保存 & シンプル操作</div>
+      <p className="text-sm text-slate-600 mt-1">設定は保存され、次回すぐ再開。迷わないUI。</p>
+    </div>
+  </div>
+
+  {/* FAQ（details） */}
+  <div className="mt-4">
+    <details className="rounded-xl border border-slate-200 p-4">
+      <summary className="font-medium cursor-pointer">スマホで音が鳴らない時は？</summary>
+      <p className="text-sm text-slate-600 mt-2">
+        一度「音を有効にする」や「スタート」ボタンを押すと音が鳴るようになります（ブラウザ仕様のため）。
+        また端末のサイレントモード/音量もご確認ください。
+      </p>
+    </details>
+  </div>
+
+  {/* CTA */}
+  <div className="mt-6 flex flex-wrap items-center gap-3">
+    <a href="#top" onClick={(e)=>{e.preventDefault(); window.scrollTo({top:0,behavior:'smooth'})}}
+       className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-white shadow hover:shadow-md">
+      いますぐ始める
+    </a>
+    <a href="#shop" className="text-sm text-blue-600">集中に効くおすすめを見る</a>
+  </div>
+</section>
+
 
         {/* おすすめ（アフィリエイト欄） */}
         <section id="shop" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

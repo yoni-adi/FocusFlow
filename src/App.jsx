@@ -529,6 +529,82 @@ export default function App() {
     <a href="#shop" className="text-sm text-blue-600">集中に効くおすすめを見る</a>
   </div>
 </section>
+{/* --- ポモドーロ解説記事セクション（審査用の有用コンテンツ） --- */}
+<section id="guide" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+  <h2 className="font-semibold mb-3 text-xl">ポモドーロ・テクニックの使い方（3分で読める）</h2>
+  <p className="text-slate-700">
+    ポモドーロ・テクニックは、「<strong>25分集中 + 5分休憩</strong>」を1セットとして繰り返す時間管理術です。短い集中を積み重ねることで
+    集中力を保ち、先延ばしを防ぎます。FocusFlow はノイズ再生・自動ラウンド・PWA対応で、学習や仕事の集中をサポートします。
+  </p>
+
+  <h3 className="font-semibold mt-5 mb-2">基本ステップ</h3>
+  <ol className="list-decimal pl-5 space-y-2 text-slate-700">
+    <li>今日やるタスクを1〜3個にしぼる（細かく分解するとなお良い）。</li>
+    <li>タイマーを<strong>25分</strong>にセットして「スタート」。画面は見続けなくてOK。</li>
+    <li>通知音が鳴ったら<strong>5分休憩</strong>。席を立つ・目を休める・水分補給。</li>
+    <li>これで1ポモ（1ラウンド）。<strong>4ポモ</strong>終えたら<strong>15分の長休憩</strong>。</li>
+    <li>記録を1行メモ（やったこと/気づき）。次のポモドーロへ！</li>
+  </ol>
+
+  <h3 className="font-semibold mt-5 mb-2">コツ（成果が伸びる3ポイント）</h3>
+  <ul className="list-disc pl-5 space-y-2 text-slate-700">
+    <li><strong>ノイズの使い分け：</strong>ホワイト＝雑音カット、ピンク＝落ち着き、ブラウン＝低音で安定感。自分の合うものを。</li>
+    <li><strong>25分に収まる粒度へ分割：</strong>「資料作成」→「図の差し替え」「結論の追記」のように細かく。</li>
+    <li><strong>完璧を目指さない：</strong>1ポモで 60〜80% まで作って、次で仕上げる。</li>
+  </ul>
+
+  <div className="grid md:grid-cols-3 gap-4 mt-6">
+    <div className="rounded-xl border border-slate-200 p-4">
+      <h4 className="font-medium mb-1">通知＆音でお知らせ</h4>
+      <p className="text-sm text-slate-600">
+        切り替え時にベル音＆通知（許可時）。タイマーを見張る必要はありません。
+      </p>
+    </div>
+    <div className="rounded-xl border border-slate-200 p-4">
+      <h4 className="font-medium mb-1">ホーム画面から即起動</h4>
+      <p className="text-sm text-slate-600">
+        PWA対応でスマホのホーム画面に追加できます。アプリ感覚でサクッと開始。
+      </p>
+    </div>
+    <div className="rounded-xl border border-slate-200 p-4">
+      <h4 className="font-medium mb-1">記録で上達</h4>
+      <p className="text-sm text-slate-600">
+        1日最後にポモ数とメモを残すと、見える化されて継続しやすくなります。
+      </p>
+    </div>
+  </div>
+
+  <h3 className="font-semibold mt-6 mb-2">よくある質問</h3>
+  <div className="divide-y divide-slate-200 rounded-xl border border-slate-200">
+    <details className="p-4">
+      <summary className="font-medium cursor-pointer">25-5 以外の比率でもOK？</summary>
+      <p className="text-sm text-slate-700 mt-2">
+        はい。20-5 や 50-10 など、仕事の性質に合わせて調整してください。設定から自由に変更できます。
+      </p>
+    </details>
+    <details className="p-4">
+      <summary className="font-medium cursor-pointer">音が鳴らない・通知が来ない</summary>
+      <p className="text-sm text-slate-700 mt-2">
+        初回はブラウザの仕様でユーザー操作が必要です。「音を有効にする」を押した後、音量とミュートにご注意ください。
+        iPhoneではサイレントモードも要確認です。
+      </p>
+    </details>
+    <details className="p-4">
+      <summary className="font-medium cursor-pointer">スマホでの使い勝手は？</summary>
+      <p className="text-sm text-slate-700 mt-2">
+        PWAとしてホーム画面に追加できます。アプリのように全画面で起動でき、通信量も軽量です。
+      </p>
+    </details>
+  </div>
+
+  <p className="text-xs text-slate-500 mt-4">
+    参考：<a href="#guide" className="text-blue-600 underline">このページのガイド</a>／
+    <a href="/terms.html" className="text-blue-600 underline">利用規約</a>／
+    <a href="/privacy.html" className="text-blue-600 underline">プライバシーポリシー</a>／
+    <a href="/contact.html" className="text-blue-600 underline">お問い合わせ</a>
+  </p>
+</section>
+
 
 
         {/* おすすめ（アフィリエイト欄） */}

@@ -308,9 +308,9 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-3xl px-4 py-6">
-        <div className="mb-4 rounded-2xl border border-dashed border-slate-300 p-4 text-center text-slate-500">
+        {/*<div className="mb-4 rounded-2xl border border-dashed border-slate-300 p-4 text-center text-slate-500">
           広告枠（AdSense 300×250 など）
-        </div>
+        </div>*/}
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* 左：タイマー */}
@@ -465,9 +465,9 @@ export default function App() {
           </div>
         </div>
 
-        <div className="mt-6 mb-10 rounded-2xl border border-dashed border-slate-300 p-4 text-center text-slate-500">
+        {/*<div className="mt-6 mb-10 rounded-2xl border border-dashed border-slate-300 p-4 text-center text-slate-500">
           広告枠（レスポンシブ広告）
-        </div>
+        </div>*/}
         {/* 使い方 & メリット */}
 <section id="howto" className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
   <h2 className="font-semibold mb-4 flex items-center gap-2">

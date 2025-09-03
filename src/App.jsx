@@ -608,6 +608,7 @@ export default function App() {
 
 
         {/* おすすめ（アフィリエイト欄） */}
+        {/*
         <section id="shop" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="font-semibold mb-4 flex items-center gap-2"><ShoppingBag className="h-5 w-5"/> 集中を高めるおすすめ</h2>
           <ul className="grid sm:grid-cols-2 gap-4">
@@ -628,7 +629,7 @@ export default function App() {
             ))}
           </ul>
           <p className="text-xs text-slate-500 mt-3">※ 上記リンクはアフィリエイトリンクに差し替え可能です。</p>
-        </section>
+        </section>*/}
 
          {/* --- 共有ボタン --- */}
         <section className="my-8 text-center">

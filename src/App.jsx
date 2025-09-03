@@ -293,9 +293,9 @@ export default function App() {
             <h1 className="font-bold text-lg">FocusFlow</h1>
           </div>
           <div className="flex items-center gap-3">
-            <a href="#shop" className="inline-flex items-center gap-1 text-sm text-blue-600">
+            {/* <a href="#shop" className="inline-flex items-center gap-1 text-sm text-blue-600">
             <ShoppingBag className="h-4 w-4"/>おすすめアイテム
-            </a>
+            </a>*/}
             <a href="#howto" className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900">使い方</a>
             <button
               onClick={() => alert("PWAのインストールはブラウザの共有/インストールから行えます。")}

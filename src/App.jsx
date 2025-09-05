@@ -615,7 +615,7 @@ export default function App() {
       <ShoppingBag className="h-5 w-5" />
       集中を高めるおすすめ
     </h2>
-    <span className="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-600">広告 / PR</span>
+    <span className="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-600"></span>
   </div>
 
   <ul className="grid sm:grid-cols-2 gap-4">

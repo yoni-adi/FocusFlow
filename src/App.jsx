@@ -293,9 +293,9 @@ export default function App() {
             <h1 className="font-bold text-lg">FocusFlow</h1>
           </div>
           <div className="flex items-center gap-3">
-            {/* <a href="#shop" className="inline-flex items-center gap-1 text-sm text-blue-600">
+             <a href="#shop" className="inline-flex items-center gap-1 text-sm text-blue-600">
             <ShoppingBag className="h-4 w-4"/>おすすめアイテム
-            </a>*/}
+            </a>
             <a href="#howto" className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900">使い方</a>
             <button
               onClick={() => alert("PWAのインストールはブラウザの共有/インストールから行えます。")}
@@ -608,28 +608,59 @@ export default function App() {
 
 
         {/* おすすめ（アフィリエイト欄） */}
-        {/*
-        <section id="shop" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="font-semibold mb-4 flex items-center gap-2"><ShoppingBag className="h-5 w-5"/> 集中を高めるおすすめ</h2>
-          <ul className="grid sm:grid-cols-2 gap-4">
-            {[{
-              title:"高遮音イヤープラグ",
-              desc:"電車やカフェでも集中。装着感の良いタイプ。",
-              url:"#",
-            },{
-              title:"タイムブロッキング用ノート",
-              desc:"ポモドーロの記録に。1日1ページで管理しやすい。",
-              url:"#",
-            }].map((p, i) => (
-              <li key={i} className="rounded-xl border border-slate-200 p-4">
-                <div className="font-medium">{p.title}</div>
-                <p className="text-sm text-slate-600 mt-1">{p.desc}</p>
-                <a href={p.url} className="inline-block mt-2 text-blue-600 text-sm">詳細を見る（アフィリンク）</a>
-              </li>
-            ))}
-          </ul>
-          <p className="text-xs text-slate-500 mt-3">※ 上記リンクはアフィリエイトリンクに差し替え可能です。</p>
-        </section>*/}
+        {/* おすすめ（アフィリエイト：PR） */}
+<section id="shop" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm mt-8">
+  <div className="flex items-center justify-between">
+    <h2 className="font-semibold mb-4 flex items-center gap-2">
+      <ShoppingBag className="h-5 w-5" />
+      集中を高めるおすすめ
+    </h2>
+    <span className="text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-600">広告 / PR</span>
+  </div>
+
+  <ul className="grid sm:grid-cols-2 gap-4">
+    {/* 1) ノイズキャンセリングイヤホン */}
+    <li className="rounded-xl border border-slate-200 p-4 flex flex-col">
+      <div className="font-medium text-base">ノイズキャンセリングイヤホン</div>
+      <p className="text-sm text-slate-600 mt-1">
+        カフェや電車でも一瞬で“自分の世界”。音による集中ブーストを手軽に。
+      </p>
+      <a
+        href="https://amzn.to/4nBtyT1"
+        target="_blank"
+        rel="nofollow sponsored noopener noreferrer"
+        className="inline-flex items-center justify-center mt-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2"
+        aria-label="ノイズキャンセリングイヤホンをAmazonで見る（アフィリエイト）"
+      >
+        Amazonで見る
+      </a>
+      <span className="mt-2 text-[11px] text-slate-500">※ アフィリエイトリンクです</span>
+    </li>
+
+    {/* 2) Moldex 高性能耳栓 */}
+    <li className="rounded-xl border border-slate-200 p-4 flex flex-col">
+      <div className="font-medium text-base">Moldex 高性能耳栓</div>
+      <p className="text-sm text-slate-600 mt-1">
+        コスパ良し・装着感良し。手軽に雑音をカットして、没入時間をつくる定番。
+      </p>
+      <a
+        href="https://amzn.to/427bMys"
+        target="_blank"
+        rel="nofollow sponsored noopener noreferrer"
+        className="inline-flex items-center justify-center mt-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-4 py-2"
+        aria-label="Moldex 耳栓をAmazonで見る（アフィリエイト）"
+      >
+        Amazonで見る
+      </a>
+      <span className="mt-2 text-[11px] text-slate-500">※ アフィリエイトリンクです</span>
+    </li>
+  </ul>
+
+  <p className="text-[11px] text-slate-500 mt-3">
+    本ページのリンクはプロモーション（アフィリエイト）を含みます。収益は本サービスの運営・改善に活用します。
+  </p>
+</section>
+
 
          {/* --- 共有ボタン --- */}
         <section className="my-8 text-center">

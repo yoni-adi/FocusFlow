@@ -634,7 +634,7 @@ export default function App() {
       >
         Amazonで見る
       </a>
-      <span className="mt-2 text-[11px] text-slate-500">※ アフィリエイトリンクです</span>
+      <span className="mt-2 text-[11px] text-slate-500"></span>
     </li>
 
     {/* 2) Moldex 高性能耳栓 */}
@@ -652,7 +652,7 @@ export default function App() {
       >
         Amazonで見る
       </a>
-      <span className="mt-2 text-[11px] text-slate-500">※ アフィリエイトリンクです</span>
+      <span className="mt-2 text-[11px] text-slate-500"></span>
     </li>
   </ul>
 
